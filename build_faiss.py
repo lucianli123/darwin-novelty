@@ -6,7 +6,7 @@ import sys
 import os 
 
 
-index=faiss.IndexFlatIP(384)
+index=faiss.IndexFlatIP(384) #intitialize with vector size
 
 start=int(sys.argv[1])
 
@@ -22,7 +22,7 @@ torun=[]
 for b in books["id"]:
     if os.path.exists('filt_vect/'+b+'.pickle'):
         torun.append(b)
-torun=torun[start:start+5000]
+torun=torun[start:start+5000] #create 5000 books FAISS indicies bc of ram limits
 
 
 count=0
@@ -35,42 +35,19 @@ for id in torun:
     try:
         file = open('filt_vect/'+id+'.pickle', 'rb')
         emb = pickle.load(file)
-        
+
+        #store mapping of book and sentence metadata
         for e in range(0,len(emb)):
             book_map[count]=(id,e)
             count+=1
         
-        faiss.normalize_L2(emb)
+        faiss.normalize_L2(emb) #cosine distance
         index.add(emb)
         book_ct+=1
     except:
         continue
-'''
-embs=["echoesfrombackwo00levi_0","formofhorseasitl00cars","paper-doi-10_1098_rspl_1859_0004"]
-for e in embs:
-    out=[]
-    try:
-        os.mkdir("matches/"+e)
-    except:
-        pass
-    file = open('filt_vect/'+e+'.pickle', 'rb')
-    emb = pickle.load(file)
-    lims,D,I=index.range_search(emb, 0.9)
-    for i in range(0,len(emb)):
-        
-        for j in range(lims[i],lims[i+1]):
-            row=[]
-            row.append(i)
-            #print(oos[I[i][j]])
-            match=book_map[I[j]]
-            row.append(match[0])
-            row.append(match[1])
-            row.append(D[j])
-            out.append(row)
-    write=pd.DataFrame(out)
-    write.columns=["orig_index", "match_id", "match_ind", "score"]
-    write.to_csv("matches/"+e+"/"+str(start)+".csv")
-'''
+
+##search with book embeddings
 embs=["spen"]#,"oos","spen", "soc"]
 
 for e in embs:
